@@ -1,8 +1,4 @@
-enum DetectedLinkType {
-  url,
-  email,
-  phone,
-}
+enum DetectedLinkType { url, email, phone }
 
 class DetectedLink {
   const DetectedLink({
