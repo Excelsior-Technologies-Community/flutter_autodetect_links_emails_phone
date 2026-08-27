@@ -11,7 +11,7 @@
 ## 📷 Preview
 
 <p align="center">
-  <img src="assets/auto_detect_preview.gif" alt="Auto Detect Text Preview" width="320"/>
+  <img src="assets/auto_detect_links_emails_phone.gif" alt="Auto Detect Text Preview" width="320"/>
 </p>
 
 *A premium interactive text detection widget featuring real-time URL, email, and phone number recognition, custom clickable styles, and tap callbacks.*
