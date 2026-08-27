@@ -1,7 +1,7 @@
 name: flutter_autodetect_links_emails_phone
-description: "A new Flutter package project."
+description: "A lightweight Flutter package to automatically detect and style clickable URLs, emails, and phone numbers in text strings."
 version: 0.0.1
-homepage:
+homepage: https://github.com/example/flutter_autodetect_links_emails_phone
 
 environment:
   sdk: ^3.11.4

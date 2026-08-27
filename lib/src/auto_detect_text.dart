@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 import 'link_detector.dart';
 
-class AutoDetectText extends StatelessWidget {
+class AutoDetectText extends StatefulWidget {
   const AutoDetectText(
     this.text, {
     super.key,
@@ -20,121 +20,139 @@ class AutoDetectText extends StatelessWidget {
   });
 
   final String text;
-
   final TextStyle? style;
-
   final TextStyle? linkStyle;
   final TextStyle? emailStyle;
   final TextStyle? phoneStyle;
-
   final ValueChanged<String>? onUrlTap;
   final ValueChanged<String>? onEmailTap;
   final ValueChanged<String>? onPhoneTap;
-
   final TextAlign textAlign;
-
   final int? maxLines;
-
   final TextOverflow overflow;
 
   @override
+  State<AutoDetectText> createState() => _AutoDetectTextState();
+}
+
+class _AutoDetectTextState extends State<AutoDetectText> {
+  final List<TapGestureRecognizer> _recognizers = [];
+
+  @override
+  void dispose() {
+    _clearRecognizers();
+    super.dispose();
+  }
+
+  void _clearRecognizers() {
+    for (final recognizer in _recognizers) {
+      recognizer.dispose();
+    }
+    _recognizers.clear();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final links = LinkDetector.detect(text);
+    _clearRecognizers();
+
+    final links = LinkDetector.detect(widget.text);
 
     if (links.isEmpty) {
       return Text(
-        text,
-        style: style,
-        textAlign: textAlign,
-        maxLines: maxLines,
-        overflow: overflow,
+        widget.text,
+        style: widget.style,
+        textAlign: widget.textAlign,
+        maxLines: widget.maxLines,
+        overflow: widget.overflow,
       );
     }
 
     final spans = <TextSpan>[];
-
     int currentPosition = 0;
+    final defaultBaseStyle = widget.style ?? DefaultTextStyle.of(context).style;
 
     for (final link in links) {
       if (link.start > currentPosition) {
         spans.add(
           TextSpan(
-            text: text.substring(currentPosition, link.start),
-            style: style,
+            text: widget.text.substring(currentPosition, link.start),
+            style: widget.style,
           ),
         );
       }
 
+      final recognizer = TapGestureRecognizer()
+        ..onTap = () => _handleTap(link);
+      _recognizers.add(recognizer);
+
+      final combinedLinkStyle = defaultBaseStyle.merge(_styleFor(link));
+
       spans.add(
         TextSpan(
           text: link.text,
-          style: _styleFor(link),
-          recognizer: TapGestureRecognizer()..onTap = () => _handleTap(link),
+          style: combinedLinkStyle,
+          recognizer: recognizer,
         ),
       );
 
       currentPosition = link.end;
     }
 
-    if (currentPosition < text.length) {
-      spans.add(TextSpan(text: text.substring(currentPosition), style: style));
+    if (currentPosition < widget.text.length) {
+      spans.add(
+        TextSpan(
+          text: widget.text.substring(currentPosition),
+          style: widget.style,
+        ),
+      );
     }
 
     return Text.rich(
       TextSpan(children: spans),
-      textAlign: textAlign,
-      maxLines: maxLines,
-      overflow: overflow,
+      textAlign: widget.textAlign,
+      maxLines: widget.maxLines,
+      overflow: widget.overflow,
     );
   }
 
-  TextStyle? _styleFor(DetectedLink link) {
+  TextStyle _styleFor(DetectedLink link) {
     switch (link.type) {
       case DetectedLinkType.url:
-        return linkStyle ?? _defaultLinkStyle;
-
+        return widget.linkStyle ?? _defaultLinkStyle;
       case DetectedLinkType.email:
-        return emailStyle ?? _defaultEmailStyle;
-
+        return widget.emailStyle ?? _defaultEmailStyle;
       case DetectedLinkType.phone:
-        return phoneStyle ?? _defaultPhoneStyle;
+        return widget.phoneStyle ?? _defaultPhoneStyle;
     }
   }
 
-  TextStyle get _defaultLinkStyle {
-    return const TextStyle(
-      color: Colors.blue,
-      decoration: TextDecoration.underline,
-    );
-  }
+  static const _defaultLinkStyle = TextStyle(
+    color: Colors.blue,
+    decoration: TextDecoration.underline,
+  );
 
-  TextStyle get _defaultEmailStyle {
-    return const TextStyle(
-      color: Colors.blue,
-      decoration: TextDecoration.underline,
-    );
-  }
+  static const _defaultEmailStyle = TextStyle(
+    color: Colors.blue,
+    decoration: TextDecoration.underline,
+  );
 
-  TextStyle get _defaultPhoneStyle {
-    return const TextStyle(
-      color: Colors.blue,
-      decoration: TextDecoration.underline,
-    );
-  }
+  static const _defaultPhoneStyle = TextStyle(
+    color: Colors.blue,
+    decoration: TextDecoration.underline,
+  );
 
   void _handleTap(DetectedLink link) {
     switch (link.type) {
       case DetectedLinkType.url:
-        onUrlTap?.call(link.text);
+        widget.onUrlTap?.call(link.text);
         break;
-
       case DetectedLinkType.email:
-        onEmailTap?.call(link.text);
+        widget.onEmailTap?.call(link.text);
         break;
-
       case DetectedLinkType.phone:
-        onPhoneTap?.call(link.text);
+        widget.onPhoneTap?.call(link.text);
         break;
     }
   }
 }
+
